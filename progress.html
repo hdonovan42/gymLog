@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Progress Tracker - Progress Charts</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <h1>Gym Progress Tracker</h1>
+    
+    <div class="nav">
+        <a href="index.html" class="nav-link">Log Workout</a>
+        <a href="history.html" class="nav-link">Workout History</a>
+        <a href="progress.html" class="nav-link active">Progress Charts</a>
+    </div>
+
+    <hr>
+
+    <h2>Progress Charts</h2>
+    
+    <label>Select Movement:
+        <select id="chartMovement" onchange="updateChart()">
+            <option value="Squat">Squat</option>
+            <option value="Bench">Bench</option>
+            <option value="Deadlift">Deadlift</option>
+            <option value="Press">Press</option>
+        </select>
+    </label>
+    
+    <canvas id="progressChart" width="800" height="400"></canvas>
+
+    <script>
+        // Load workouts from localStorage
+        let workouts = JSON.parse(localStorage.getItem('workouts') || '[]');
+        let progressChart = null;
+        
+        // Format date properly to avoid timezone issues
+        function formatDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            return `${month}/${day}/${year}`;
+        }
+        
+        // Calculate 1RM from reps and weight
+        function calculate1RM(weight, reps) {
+            const repFactors = {
+                1: 1.0,
+                2: 0.95,
+                3: 0.9,
+                4: 0.88,
+                5: 0.85,
+                6: 0.83,
+                7: 0.8,
+                8: 0.78,
+                9: 0.76,
+                10: 0.75,
+                11: 0.73,
+                12: 0.71
+            };
+            
+            const factor = repFactors[reps] || (1 - (reps - 1) * 0.025);
+            return weight / factor;
+        }
+        
+        // Update progress chart
+        function updateChart() {
+            const selectedMovement = document.getElementById('chartMovement').value;
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            
+            // Get data for selected movement
+            const movementData = [];
+            
+            workouts.forEach(workout => {
+                const movements = workout.movements.filter(m => m.movement === selectedMovement);
+                if (movements.length > 0) {
+                    // Find the set with highest estimated 1RM
+                    let maxEstimated1RM = 0;
+                    movements.forEach(m => {
+                        const estimated1RM = calculate1RM(m.weight, m.reps);
+                        if (estimated1RM > maxEstimated1RM) {
+                            maxEstimated1RM = estimated1RM;
+                        }
+                    });
+                    
+                    movementData.push({
+                        date: workout.date,
+                        estimated1RM: Math.round(maxEstimated1RM)
+                    });
+                }
+            });
+            
+            // Sort by date
+            movementData.sort((a, b) => new Date(a.date) - new Date(b.date));
+            
+            // Destroy existing chart
+            if (progressChart) {
+                progressChart.destroy();
+            }
+            
+            // Create new chart
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: movementData.map(d => formatDate(d.date)),
+                    datasets: [{
+                        label: `${selectedMovement} Estimated 1RM (lbs)`,
+                        data: movementData.map(d => d.estimated1RM),
+                        borderColor: '#333',
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointBackgroundColor: '#333',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+            
+            if (movementData.length === 0) {
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#666';
+                ctx.textAlign = 'center';
+                ctx.fillText('No data available for this movement', 400, 200);
+            }
+        }
+        
+        // Initial chart load
+        updateChart();
+    </script>
+</body>
+</html>

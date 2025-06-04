@@ -1,0 +1,76 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    color: black;
+}
+
+h1 {
+    text-align: center;
+}
+
+.nav {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.nav a {
+    margin: 0 15px;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.nav a:hover {
+    color: blue;
+    text-decoration: underline;
+}
+
+.nav a.active {
+    font-weight: bold;
+}
+
+input[type="date"],
+input[type="text"],
+input[type="number"],
+select {
+    padding: 5px;
+    margin: 5px 0;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    margin: 5px 0;
+}
+
+button:hover {
+    background-color: #e0e0e0;
+}
+
+.movement-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.workout-card {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+#progressChart {
+    border: 1px solid #ccc;
+    margin-top: 20px;
+}
+
+.no-data {
+    color: #666;
+    font-style: italic;
+    padding: 20px 0;
+}

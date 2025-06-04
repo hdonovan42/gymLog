@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Progress Tracker - Log Workout</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Gym Progress Tracker</h1>
+    
+    <div class="nav">
+        <a href="index.html" class="nav-link active">Log Workout</a>
+        <a href="history.html" class="nav-link">Workout History</a>
+        <a href="progress.html" class="nav-link">Progress Charts</a>
+    </div>
+
+    <hr>
+
+    <h2>Log Workout</h2>
+    
+    <label>Date: <input type="date" id="workoutDate"></label>
+    <label style="margin-left: 20px;">Title: <input type="text" id="workoutTitle" placeholder="e.g., Upper Body Day"></label>
+    
+    <hr>
+    
+    <h3>Add Movement</h3>
+    
+    <label>Movement:
+        <select id="movement">
+            <option value="Squat">Squat</option>
+            <option value="Bench">Bench</option>
+            <option value="Deadlift">Deadlift</option>
+            <option value="Press">Press</option>
+        </select>
+    </label>
+    
+    <label style="margin-left: 10px;">Sets: <input type="number" id="sets" min="1" style="width: 50px;"></label>
+    <label style="margin-left: 10px;">Reps: <input type="number" id="reps" min="1" style="width: 50px;"></label>
+    <label style="margin-left: 10px;">Weight (lbs): <input type="number" id="weight" min="0" step="5" style="width: 80px;"></label>
+    
+    <button onclick="addMovement()" style="margin-left: 10px;">Add Movement</button>
+    
+    <hr>
+    
+    <h3>Current Workout</h3>
+    <div id="movementsList"></div>
+    
+    <br>
+    <button onclick="saveWorkout()">Save Workout</button>
+
+    <script>
+        // Initialize data storage
+        let currentWorkout = {
+            date: '',
+            title: '',
+            movements: []
+        };
+        
+        let workouts = JSON.parse(localStorage.getItem('workouts') || '[]');
+        
+        // Set today's date as default
+        document.getElementById('workoutDate').value = new Date().toISOString().split('T')[0];
+        
+        // Add movement to current workout
+        function addMovement() {
+            const movement = document.getElementById('movement').value;
+            const sets = document.getElementById('sets').value;
+            const reps = document.getElementById('reps').value;
+            const weight = document.getElementById('weight').value;
+            
+            if (!sets || !reps || !weight) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            const movementData = {
+                movement,
+                sets: parseInt(sets),
+                reps: parseInt(reps),
+                weight: parseFloat(weight)
+            };
+            
+            currentWorkout.movements.push(movementData);
+            updateMovementsList();
+            
+            // Clear inputs
+            document.getElementById('sets').value = '';
+            document.getElementById('reps').value = '';
+            document.getElementById('weight').value = '';
+        }
+        
+        // Update displayed movements
+        function updateMovementsList() {
+            const list = document.getElementById('movementsList');
+            list.innerHTML = '';
+            
+            if (currentWorkout.movements.length === 0) {
+                list.innerHTML = '<p class="no-data">No movements added yet</p>';
+                return;
+            }
+            
+            currentWorkout.movements.forEach((movement, index) => {
+                const item = document.createElement('div');
+                item.className = 'movement-item';
+                item.innerHTML = `
+                    ${movement.movement}: ${movement.sets} sets × ${movement.reps} reps @ ${movement.weight} lbs
+                    <button onclick="removeMovement(${index})" style="margin-left: 10px;">Remove</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        // Remove movement
+        function removeMovement(index) {
+            currentWorkout.movements.splice(index, 1);
+            updateMovementsList();
+        }
+        
+        // Save workout
+        function saveWorkout() {
+            const date = document.getElementById('workoutDate').value;
+            const title = document.getElementById('workoutTitle').value;
+            
+            if (!title) {
+                alert('Please enter a workout title');
+                return;
+            }
+            
+            if (currentWorkout.movements.length === 0) {
+                alert('Please add at least one movement');
+                return;
+            }
+            
+            // Create a new workout object with current values
+            const workoutToSave = {
+                date: date,
+                title: title,
+                movements: [...currentWorkout.movements]
+            };
+            
+            workouts.push(workoutToSave);
+            localStorage.setItem('workouts', JSON.stringify(workouts));
+            
+            alert('Workout saved successfully!');
+            
+            // Reset form
+            currentWorkout = { date: '', title: '', movements: [] };
+            document.getElementById('workoutTitle').value = '';
+            updateMovementsList();
+        }
+        
+        // Initial setup
+        updateMovementsList();
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Progress Tracker - Workout History</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Gym Progress Tracker</h1>
+    
+    <div class="nav">
+        <a href="index.html" class="nav-link">Log Workout</a>
+        <a href="history.html" class="nav-link active">Workout History</a>
+        <a href="progress.html" class="nav-link">Progress Charts</a>
+    </div>
+
+    <hr>
+
+    <h2>Workout History</h2>
+    <div id="workoutHistory"></div>
+
+    <script>
+        // Load workouts from localStorage
+        let workouts = JSON.parse(localStorage.getItem('workouts') || '[]');
+        
+        // Format date properly to avoid timezone issues
+        function formatDate(dateString) {
+            const [year, month, day] = dateString.split('-');
+            return `${month}/${day}/${year}`;
+        }
+        
+        // Display workout history
+        function displayWorkoutHistory() {
+            const historyEl = document.getElementById('workoutHistory');
+            historyEl.innerHTML = '';
+            
+            if (workouts.length === 0) {
+                historyEl.innerHTML = '<p class="no-data">No workouts logged yet</p>';
+                return;
+            }
+            
+            // Sort workouts by date (newest first)
+            const sortedWorkouts = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            sortedWorkouts.forEach(workout => {
+                const card = document.createElement('div');
+                card.className = 'workout-card';
+                
+                let movementsHtml = '<div>';
+                workout.movements.forEach(m => {
+                    movementsHtml += `<p>${m.movement}: ${m.sets} sets × ${m.reps} reps @ ${m.weight} lbs</p>`;
+                });
+                movementsHtml += '</div>';
+                
+                card.innerHTML = `
+                    <strong>${workout.title}</strong><br>
+                    <small>${formatDate(workout.date)}</small>
+                    <hr>
+                    ${movementsHtml}
+                `;
+                
+                historyEl.appendChild(card);
+            });
+        }
+        
+        // Display history on page load
+        displayWorkoutHistory();
+    </script>
+</body>
+</html>

@@ -29,7 +29,9 @@
         </select>
     </label>
     
-    <canvas id="progressChart" width="800" height="400"></canvas>
+    <div style="position: relative; height: 400px; width: 100%;">
+        <canvas id="progressChart"></canvas>
+    </div>
 
     <script>
         // Load workouts from localStorage
@@ -99,42 +101,48 @@
             }
             
             // Create new chart
-            progressChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: movementData.map(d => formatDate(d.date)),
-                    datasets: [{
-                        label: `${selectedMovement} Estimated 1RM (lbs)`,
-                        data: movementData.map(d => d.estimated1RM),
-                        borderColor: '#333',
-                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-                        borderWidth: 2,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#333',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: true
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false
-                        }
-                    }
-                }
-            });
-            
             if (movementData.length === 0) {
+                // Clear canvas and show no data message
+                if (progressChart) {
+                    progressChart.destroy();
+                    progressChart = null;
+                }
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 ctx.font = '16px Arial';
                 ctx.fillStyle = '#666';
                 ctx.textAlign = 'center';
-                ctx.fillText('No data available for this movement', 400, 200);
+                ctx.fillText('No data available for this movement', ctx.canvas.width / 2, ctx.canvas.height / 2);
+            } else {
+                progressChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: movementData.map(d => formatDate(d.date)),
+                        datasets: [{
+                            label: `${selectedMovement} Estimated 1RM (lbs)`,
+                            data: movementData.map(d => d.estimated1RM),
+                            borderColor: '#333',
+                            backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#333',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false
+                            }
+                        }
+                    }
+                });
             }
         }
         
